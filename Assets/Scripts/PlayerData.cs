@@ -1,7 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine.SceneManagement;
-using UnityEngine;
+﻿using UnityEngine;
 
 
 [System.Serializable]
@@ -20,8 +17,7 @@ public class PlayerData
         currentHealth = player.currentHealth;
         maxMana = player.maxMana;
         currentMana = player.currentMana;
-        gs = GameObject.FindObjectOfType<GameSession>();
-        score = gs.score;
+        score = gs != null ? gs.score : 0;
         //sceneIndex = gs.sceneIndex;
     }
 }

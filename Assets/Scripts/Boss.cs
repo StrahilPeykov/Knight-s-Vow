@@ -51,6 +51,11 @@ public class Boss : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (!isAlive)
+        {
+            return;
+        }
+
         HealthChecks();
         Move();
     }
@@ -91,10 +96,12 @@ public class Boss : MonoBehaviour
     ///<summary>Dies if his health reaches / goes below zero </summary>
     private void Die()
     {
-        if (bossCurrentHealth <= 0)
+        if (bossCurrentHealth <= 0 && isAlive)
         {          
             isAlive = false;
             this.GetComponent<PolygonCollider2D>().enabled = false;
+            bossRB.linearVelocity = Vector2.zero;
+            bossAnimator.SetBool("isMoving", false);
             bossAnimator.SetBool("isDead", true); // triggering his animation
             FindObjectOfType<GameSession>().AddToScore(pointsForBossDeath); // adding boss's points to the score
             levelExit.GetComponent<BoxCollider2D>().enabled = true;
@@ -104,6 +111,11 @@ public class Boss : MonoBehaviour
     ///<summary> The moving logic with its checks </summary> 
     private void Move()
     {
+        if (!isAlive)
+        {
+            return;
+        }
+
         if (isHalfHealth==false && (!bossAnimator.GetCurrentAnimatorStateInfo(0).IsName("BossIntro") && !bossAnimator.GetCurrentAnimatorStateInfo(0).IsName("Idle")) )  //if his intro animation is NOT playing and he is alive, he will start moving
         {
             HandleMovement();
@@ -133,4 +145,3 @@ public class Boss : MonoBehaviour
 
     
    
-

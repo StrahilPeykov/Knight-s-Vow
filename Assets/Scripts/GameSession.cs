@@ -8,6 +8,8 @@ using UnityEngine.UI;
 
 public class GameSession : MonoBehaviour
 {
+    private static GameSession instance;
+
     public int score = 0;
     [SerializeField] Player player;
     [SerializeField] Text scoreText;
@@ -15,27 +17,43 @@ public class GameSession : MonoBehaviour
 
     private void Awake()
     {
-        int numGameSessions = FindObjectsOfType<GameSession>().Length;
-        if (numGameSessions > 1)
+        if (instance != null && instance != this)
         {
+            instance.HandoffSceneReferences(player, scoreText);
+            instance.RefreshScoreText();
             Destroy(gameObject);
+            return;
         }
-        else
-        {
-            DontDestroyOnLoad(gameObject);
-        }
+
+        instance = this;
+        DontDestroyOnLoad(gameObject);
+        RefreshScoreText();
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        scoreText.text = "Score: " + score.ToString();
+        RefreshScoreText();
+    }
+
+    private void OnDestroy()
+    {
+        if (instance == this)
+        {
+            instance = null;
+        }
     }
 
     public void AddToScore(int pointsToAdd)
     {
         score += pointsToAdd;
-        scoreText.text = "Score: " + score.ToString();
+        RefreshScoreText();
+    }
+
+    public void SetScore(int newScore)
+    {
+        score = newScore;
+        RefreshScoreText();
     }
 
     public void ProcessPlayerDeath()
@@ -50,8 +68,32 @@ public class GameSession : MonoBehaviour
 
     private void ResetGameSession()
     {
-
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        if (instance == this)
+        {
+            instance = null;
+        }
         Destroy(gameObject);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    private void HandoffSceneReferences(Player newPlayer, Text newScoreText)
+    {
+        if (newPlayer != null)
+        {
+            player = newPlayer;
+        }
+
+        if (newScoreText != null)
+        {
+            scoreText = newScoreText;
+        }
+    }
+
+    private void RefreshScoreText()
+    {
+        if (scoreText != null)
+        {
+            scoreText.text = "Score: " + score.ToString();
+        }
     }
 }

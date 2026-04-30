@@ -40,11 +40,14 @@ public class PlayerCombat : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Mouse0))
             {
                 Attack();
+                nextAttackTime = Time.time + 1f / attackRate;
             }
             if (Input.GetKeyDown(KeyCode.Alpha1))
             {
-                Dash();
-                nextAttackTime = Time.time + 1f / attackRate;
+                if (Dash())
+                {
+                    nextAttackTime = Time.time + 1f / attackRate;
+                }
             }
             if (Input.GetKeyDown(KeyCode.Alpha2))
             {
@@ -78,15 +81,18 @@ public class PlayerCombat : MonoBehaviour
         }
     }
 
-    void Dash()
+    bool Dash()
     {
-        if (canDashing)
+        int manaCost = 30;
+        if (!canDashing || manaCost > player.currentMana)
         {
-            animator.SetTrigger("Dashing");
-            int manaCost = 30;
-            player.SpendMana(manaCost);
-            StartCoroutine(Dashing(dashingDuration));
+            return false;
         }
+
+        animator.SetTrigger("Dashing");
+        player.SpendMana(manaCost);
+        StartCoroutine(Dashing(dashingDuration));
+        return true;
     }
 
     IEnumerator Dashing(float dashingDuration)

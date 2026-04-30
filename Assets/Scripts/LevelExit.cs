@@ -7,9 +7,21 @@ public class LevelExit : MonoBehaviour
 {
     [SerializeField] float LevelLoadDelay = 2f;
     [SerializeField] float LevelExitSlowMoFactor = 0.2f;
+    bool isTransitioning = false;
 
     void OnTriggerEnter2D(Collider2D other)
     {
+        if (isTransitioning)
+        {
+            return;
+        }
+
+        if (!other.CompareTag("Player") && other.GetComponent<Player>() == null)
+        {
+            return;
+        }
+
+        isTransitioning = true;
         //calls a short delay
         StartCoroutine(LoadNextLevel());
     }

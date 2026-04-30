@@ -15,7 +15,6 @@ public class Player : MonoBehaviour
     [SerializeField] float immuneToDamageDelay = 3f;
     [SerializeField] private GameSession gs;
 
-    private Enemy_Rat enemy_rat;
     public float controlThrow;
 
     // Player Health
@@ -33,6 +32,7 @@ public class Player : MonoBehaviour
 
     // State
     bool isAlive = true;
+    bool isDamageImmune = false;
 
     // Cached component references
     Rigidbody2D myRigidBody;
@@ -40,6 +40,7 @@ public class Player : MonoBehaviour
     CapsuleCollider2D myBodyCollider2D;
     BoxCollider2D myFeet;
     float gravityScaleAtStart;
+    readonly Collider2D[] touchingColliders = new Collider2D[16];
 
     // Start is called before the first frame update
     void Start()
@@ -58,7 +59,7 @@ public class Player : MonoBehaviour
         myBodyCollider2D = GetComponent<CapsuleCollider2D>();
         myFeet = GetComponent<BoxCollider2D>();
         gravityScaleAtStart = myRigidBody.gravityScale;
-        enemy_rat = FindObjectOfType<Enemy_Rat>();
+        gs = FindObjectOfType<GameSession>();
     }
 
     // Update is called once per frame
@@ -123,20 +124,26 @@ public class Player : MonoBehaviour
     /// <summary>Reduces player's life if he touches enemy</summary>
     public void TakeLife()
     {
-        if (enemy_rat is null)
+        if (isDamageImmune || !myBodyCollider2D.IsTouchingLayers(LayerMask.GetMask("Enemy")))
         {
-            // if there is no rat on the level, do nothing
+            return;
         }
-        else
+
+        int touchingCount = myBodyCollider2D.GetContacts(touchingColliders);
+        for (int i = 0; i < touchingCount; i++)
         {
-            int enemyDamage = enemy_rat.attackDamage;
-            if ((myBodyCollider2D.IsTouchingLayers(LayerMask.GetMask("Enemy")) && enemy_rat.enabled == true)) // checking if he is touching enemy
+            Enemy_Rat enemy = touchingColliders[i].GetComponent<Enemy_Rat>();
+            if (enemy != null && enemy.enabled)
             {
                 StartCoroutine(ImmuneToDamage());
                 myAnimator.SetTrigger("GettingHurt"); // playing animation
                 myRigidBody.linearVelocity = deathKick;
-                currentHealth -= enemyDamage;
-                healthBar.SetHealth(currentHealth);
+                currentHealth -= enemy.attackDamage;
+                if (healthBar != null)
+                {
+                    healthBar.SetHealth(currentHealth);
+                }
+                break;
             }
         }
     }
@@ -144,28 +151,33 @@ public class Player : MonoBehaviour
     /// <summary>Dies if health reaches/goes below zero or if he touches spikes</summary>
     public void Die()
     {
-        if (myBodyCollider2D.IsTouchingLayers(LayerMask.GetMask("Hazards")) || myFeet.IsTouchingLayers(LayerMask.GetMask("Hazards"))) // checking if he is touching spikes
+        bool touchedHazard = myBodyCollider2D.IsTouchingLayers(LayerMask.GetMask("Hazards")) || myFeet.IsTouchingLayers(LayerMask.GetMask("Hazards"));
+        if (!touchedHazard && currentHealth > 0)
         {
-            isAlive = false;
-            myAnimator.SetTrigger("Dying"); // playing animation
-            myRigidBody.linearVelocity = deathKick;
-            FindObjectOfType<GameSession>().ProcessPlayerDeath();
+            return;
         }
-        if (currentHealth <= 0)
+
+        isAlive = false;
+        myAnimator.SetTrigger("Dying"); // playing animation
+        myRigidBody.linearVelocity = deathKick;
+        if (gs == null)
         {
-            isAlive = false;
-            myAnimator.SetTrigger("Dying");
-            myRigidBody.linearVelocity = deathKick;
-            FindObjectOfType<GameSession>().ProcessPlayerDeath();
+            gs = FindObjectOfType<GameSession>();
+        }
+        if (gs != null)
+        {
+            gs.ProcessPlayerDeath();
         }
     }
 
     /// <summary> Making the player immune to damage for x seconds and disabling collision with enemies</summary>
     IEnumerator ImmuneToDamage()
     {
-        GetComponent<CapsuleCollider2D>().enabled = false;
+        isDamageImmune = true;
+        myBodyCollider2D.enabled = false;
         yield return new WaitForSeconds(immuneToDamageDelay);
-        GetComponent<CapsuleCollider2D>().enabled = true;
+        myBodyCollider2D.enabled = true;
+        isDamageImmune = false;
     }
 
     ///<summary>flips the gameobject and his children ( attack point ) depending on what direction he is facing</summary>
@@ -215,6 +227,10 @@ public class Player : MonoBehaviour
 
     public void SavePlayer()
     {
+        if (gs == null)
+        {
+            gs = FindObjectOfType<GameSession>();
+        }
         SaveSystem.SavePlayer(this, gs);
 
     }
@@ -222,14 +238,28 @@ public class Player : MonoBehaviour
     public void LoadPlayer()
     {
         PlayerData data = SaveSystem.LoadPlayer();
+        if (data == null)
+        {
+            Debug.LogWarning("No player save file found.");
+            return;
+        }
         maxHealth = data.maxHealth;
         currentHealth = data.currentHealth;
         maxMana = data.maxMana;
         currentMana = data.currentMana;
         gs = FindObjectOfType<GameSession>();
-        gs.score = data.score;
+        if (gs != null)
+        {
+            gs.SetScore(data.score);
+        }
         // gs.sceneIndex = data.sceneIndex;
-        manaBar.SetMana((int)currentMana);
-        healthBar.SetHealth(currentHealth);
+        if (manaBar != null)
+        {
+            manaBar.SetMana((int)currentMana);
+        }
+        if (healthBar != null)
+        {
+            healthBar.SetHealth(currentHealth);
+        }
     }
 }
