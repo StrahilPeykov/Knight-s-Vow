@@ -97,7 +97,7 @@ public class PlayerCombat : MonoBehaviour
         while (dashingDuration > time)
         {
             time += Time.deltaTime;
-            myRigidBody.velocity = new Vector2(controlThrow * 7f, myRigidBody.velocity.y);
+            myRigidBody.linearVelocity = new Vector2(controlThrow * 7f, myRigidBody.linearVelocity.y);
             yield return 0;
         }
         canDashing = true;

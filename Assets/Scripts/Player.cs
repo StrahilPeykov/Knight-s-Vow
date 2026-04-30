@@ -81,10 +81,10 @@ public class Player : MonoBehaviour
     private void Run()
     {
         controlThrow = Input.GetAxis("Horizontal"); // Value is between -1 and +1
-        Vector2 playerVelocity = new Vector2(controlThrow * runSpeed, myRigidBody.velocity.y);
-        myRigidBody.velocity = playerVelocity;
+        Vector2 playerVelocity = new Vector2(controlThrow * runSpeed, myRigidBody.linearVelocity.y);
+        myRigidBody.linearVelocity = playerVelocity;
 
-        bool playerHasHorizontalSpeed = Mathf.Abs(myRigidBody.velocity.x) > Mathf.Epsilon;
+        bool playerHasHorizontalSpeed = Mathf.Abs(myRigidBody.linearVelocity.x) > Mathf.Epsilon;
         myAnimator.SetBool("Running", playerHasHorizontalSpeed); // plays running animation
     }
 
@@ -98,11 +98,11 @@ public class Player : MonoBehaviour
             return;
         }
         float controlThrow = Input.GetAxis("Vertical"); // changind moving direction to vertical
-        Vector2 climbVelocity = new Vector2(myRigidBody.velocity.x, controlThrow * climbSpeed);
-        myRigidBody.velocity = climbVelocity;
+        Vector2 climbVelocity = new Vector2(myRigidBody.linearVelocity.x, controlThrow * climbSpeed);
+        myRigidBody.linearVelocity = climbVelocity;
         myRigidBody.gravityScale = 0f;
 
-        bool playerHasVerticalSpeed = Mathf.Abs(myRigidBody.velocity.y) > Mathf.Epsilon;
+        bool playerHasVerticalSpeed = Mathf.Abs(myRigidBody.linearVelocity.y) > Mathf.Epsilon;
         myAnimator.SetBool("Climbing", playerHasVerticalSpeed);
     }
 
@@ -116,7 +116,7 @@ public class Player : MonoBehaviour
         if (Input.GetButtonDown("Jump")) // jumps if jump button is pressed
         {
             Vector2 jumpVelocityToAdd = new Vector2(0f, jumpSpeed);
-            myRigidBody.velocity += jumpVelocityToAdd;
+            myRigidBody.linearVelocity += jumpVelocityToAdd;
         }
     }
 
@@ -134,7 +134,7 @@ public class Player : MonoBehaviour
             {
                 StartCoroutine(ImmuneToDamage());
                 myAnimator.SetTrigger("GettingHurt"); // playing animation
-                myRigidBody.velocity = deathKick;
+                myRigidBody.linearVelocity = deathKick;
                 currentHealth -= enemyDamage;
                 healthBar.SetHealth(currentHealth);
             }
@@ -148,14 +148,14 @@ public class Player : MonoBehaviour
         {
             isAlive = false;
             myAnimator.SetTrigger("Dying"); // playing animation
-            myRigidBody.velocity = deathKick;
+            myRigidBody.linearVelocity = deathKick;
             FindObjectOfType<GameSession>().ProcessPlayerDeath();
         }
         if (currentHealth <= 0)
         {
             isAlive = false;
             myAnimator.SetTrigger("Dying");
-            myRigidBody.velocity = deathKick;
+            myRigidBody.linearVelocity = deathKick;
             FindObjectOfType<GameSession>().ProcessPlayerDeath();
         }
     }

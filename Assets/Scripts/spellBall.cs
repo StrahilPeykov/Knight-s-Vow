@@ -65,6 +65,6 @@ public class spellBall : MonoBehaviour
     private void Move()
     {
         moveDirection = (player.transform.position - transform.position).normalized * speed; // // determines movement - we want it to follow the player so it is the player's position minus its own
-        rb.velocity = new Vector2(moveDirection.x, moveDirection.y); //making it actually follow the player
+        rb.linearVelocity = new Vector2(moveDirection.x, moveDirection.y); //making it actually follow the player
     }
 }

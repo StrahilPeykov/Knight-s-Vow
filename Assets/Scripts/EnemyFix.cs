@@ -38,8 +38,8 @@ public class EnemyFix : MonoBehaviour
 
         }
         //always move forward
-        Vector2 myVel = myBody.velocity;
+        Vector2 myVel = myBody.linearVelocity;
         myVel.x = -myTrans.right.x * speed;
-        myBody.velocity = myVel;
+        myBody.linearVelocity = myVel;
     }
 }

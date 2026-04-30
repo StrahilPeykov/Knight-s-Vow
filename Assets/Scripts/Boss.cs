@@ -60,7 +60,7 @@ public class Boss : MonoBehaviour
     {
         moveDirection = (player.transform.position - transform.position).normalized * movementSpeed; // determines his movement - we want him to follow the player so it is the player's position minus his own.
         //making him actually follow the player
-        bossRB.velocity = new Vector2(moveDirection.x, moveDirection.y);
+        bossRB.linearVelocity = new Vector2(moveDirection.x, moveDirection.y);
         Flip();     
     }
   

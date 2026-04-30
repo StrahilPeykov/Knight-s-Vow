@@ -18,7 +18,7 @@ public class FireBall : MonoBehaviour
         pc = FindObjectOfType<PlayerCombat>();
         player = FindObjectOfType<Player>();
         playerDirection = player.controlThrow;
-        rb.velocity = transform.right * speed;
+        rb.linearVelocity = transform.right * speed;
     } 
     
       /// <summary>Gives info about what the fire ball has hit </summary>     
